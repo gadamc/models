@@ -90,3 +90,8 @@ ENV/
 
 # PyCharm
 .idea/
+
+*.DS_Store*
+*~
+*.ckpt
+*.npz
