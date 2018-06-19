@@ -163,6 +163,8 @@ def main(_):
 
       #calculate means
       postprocessed_batch_mean = np.mean(postprocessed_batch, axis=0)
+      postprocessed_batch_median = np.median(postprocessed_batch, axis=0)
+
       print(postprocessed_batch_mean.shape)
 
       # Write the postprocessed embeddings as a SequenceExample, in a similar
@@ -172,7 +174,8 @@ def main(_):
       # feature value contains the 128 bytes of the whitened quantized embedding.
       
       context_features = {
-        'mean_audio':tf.train.Feature(float_list=tf.train.FloatList(value=postprocessed_batch_mean))
+        'mean_audio':tf.train.Feature(float_list=tf.train.FloatList(value=postprocessed_batch_mean)),
+        'median_audio':tf.train.Feature(float_list=tf.train.FloatList(value=postprocessed_batch_median))
       }
       
 
@@ -199,6 +202,7 @@ def main(_):
         jsout = {
           'filename':os.path.basename(wav_file),
           'mean_audio':postprocessed_batch_mean.tolist(),
+          'median_audio':postprocessed_batch_median.tolist(),
           'audio':postprocessed_batch.tolist()
         }
 
