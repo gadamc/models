@@ -77,7 +77,6 @@ flags.DEFINE_string(
     'Path to a folder with wav files. Should contain signed 16-bit PCM samples. '
     'If none is provided, a synthetic sound is used.')
 
-
 flags.DEFINE_string(
     'checkpoint', 'vggish_model.ckpt',
     'Path to the VGGish checkpoint file.')
@@ -86,11 +85,18 @@ flags.DEFINE_string(
     'pca_params', 'vggish_pca_params.npz',
     'Path to the VGGish PCA parameters file.')
 
+flags.DEFINE_boolean(
+    'clip_and_quantize', False,
+    'If true, scale and quantize features to byte. See vggish_params for min/max values.')
+
 flags.DEFINE_string(
     'output', None,
     'Path to where JSON and TFRecord file where embeddings will be written.')
 
 FLAGS = flags.FLAGS
+
+
+
 
 
 def main(_):
@@ -157,8 +163,8 @@ def main(_):
       # Run inference and postprocessing.
       [embedding_batch] = sess.run([embedding_tensor],
                                    feed_dict={features_tensor: examples_batch})
-      #print(embedding_batch)
-      postprocessed_batch = pproc.postprocess(embedding_batch)
+
+      postprocessed_batch =  pproc.postprocess(embedding_batch, FLAGS.clip_and_quantize)
       #print(postprocessed_batch)
 
       #calculate means

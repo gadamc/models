@@ -49,7 +49,7 @@ class Postprocessor(object):
     assert self._pca_means.shape == (vggish_params.EMBEDDING_SIZE, 1), (
         'Bad PCA means shape: %r' % (self._pca_means.shape,))
 
-  def postprocess(self, embeddings_batch):
+  def postprocess(self, embeddings_batch, clip_and_quantize = True):
     """Applies postprocessing to a batch of embeddings.
 
     Args:
@@ -75,17 +75,22 @@ class Postprocessor(object):
     pca_applied = np.dot(self._pca_matrix,
                          (embeddings_batch.T - self._pca_means)).T
 
-    # Quantize by:
-    # - clipping to [min, max] range
-    clipped_embeddings = np.clip(
-        pca_applied, vggish_params.QUANTIZE_MIN_VAL,
-        vggish_params.QUANTIZE_MAX_VAL)
-    # - convert to 8-bit in range [0.0, 255.0]
-    quantized_embeddings = (
-        (clipped_embeddings - vggish_params.QUANTIZE_MIN_VAL) *
-        (255.0 /
-         (vggish_params.QUANTIZE_MAX_VAL - vggish_params.QUANTIZE_MIN_VAL)))
-    # - cast 8-bit float to uint8
-    quantized_embeddings = quantized_embeddings.astype(np.uint8)
+    if clip_and_quantize:
+      # Quantize by:
+      # - clipping to [min, max] range
+      clipped_embeddings = np.clip(
+          pca_applied, vggish_params.QUANTIZE_MIN_VAL,
+          vggish_params.QUANTIZE_MAX_VAL)
+      # - convert to 8-bit in range [0.0, 255.0]
+      quantized_embeddings = (
+          (clipped_embeddings - vggish_params.QUANTIZE_MIN_VAL) *
+          (255.0 /
+           (vggish_params.QUANTIZE_MAX_VAL - vggish_params.QUANTIZE_MIN_VAL)))
+      # - cast 8-bit float to uint8
+      quantized_embeddings = quantized_embeddings.astype(np.uint8)
 
-    return quantized_embeddings
+      return quantized_embeddings
+
+    else:
+
+      return pca_applied
